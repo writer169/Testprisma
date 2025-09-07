@@ -4,6 +4,7 @@ export default function Home() {
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [setupStatus, setSetupStatus] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -25,6 +26,22 @@ export default function Home() {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const setupDatabase = async () => {
+    setSetupStatus('Настройка базы данных...');
+    try {
+      const response = await fetch('/api/setup', {
+        method: 'POST'
+      });
+      const result = await response.json();
+      setSetupStatus(result.message);
+      if (response.ok) {
+        fetchData();
+      }
+    } catch (error) {
+      setSetupStatus('Ошибка настройки: ' + error.message);
     }
   };
 
@@ -56,6 +73,18 @@ export default function Home() {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Prisma Test App</h1>
+      
+      <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f0f8ff', border: '1px solid #ccc', borderRadius: '5px' }}>
+        <h3>Первый запуск?</h3>
+        <p>Если база данных пустая, нажмите кнопку ниже для создания тестовых данных:</p>
+        <button 
+          onClick={setupDatabase} 
+          style={{ padding: '8px 15px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+        >
+          Настроить базу данных
+        </button>
+        {setupStatus && <p style={{ marginTop: '10px', fontStyle: 'italic' }}>{setupStatus}</p>}
+      </div>
       
       <div style={{ marginBottom: '30px' }}>
         <h2>Пользователи</h2>
